@@ -1,0 +1,79 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 70vh;
+}
+
+.mainBox {
+    border: 2px solid;
+    margin: 20px;
+    width: 300px;
+    height: 300px;
+    color: black;
+    margin-bottom: 20px;
+}
+
+.counter {
+    color:red;
+    width: 100px;
+    height: 70px;
+    margin: 100px;
+    border: 2px solid;
+}
+
+.secondaryBoxes {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 100px;
+}
+
+.colorButton {
+    color: green;
+    padding: 10px 10px;
+
+}
+
+.urButtons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 80px;
+    margin-top: 50px;
+}
+
+.undoButton {
+    color: green;
+    padding: 10px 10px;
+}
+
+.redoButton {
+    color: green;
+    padding: 10px 10px;
+}
+
+.box1 {
+    border: 2px solid;
+    margin: 20px;
+    width: 200px;
+    height: 200px;
+    color: black;
+    margin-bottom: 20px;
+}
+
+.box2 {
+    border: 2px solid;
+    margin: 20px;
+    width: 200px;
+    height: 200px;
+    color: black;
+    margin-bottom: 20px;
+}
