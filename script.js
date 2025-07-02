@@ -80,6 +80,16 @@ const redoFunction = () => {
   }
 }
 
+// to show what colors lay in the arrays
+
+const divElements = () => {
+    let div = document.createElement("div");
+    div.classList.add("undoElements");
+    document.body.append(div);
+}
+
+undoArray.map(divElements);
+
 // undo button functionality
 
 undoButton.addEventListener("click", () => {
