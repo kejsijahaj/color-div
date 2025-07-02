@@ -33,7 +33,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 100px;
+    gap: 70px;
 }
 
 .colorButton {
@@ -60,20 +60,20 @@ body {
     padding: 10px 10px;
 }
 
-.box1 {
+.undoBox {
     border: 2px solid;
     margin: 20px;
-    width: 200px;
-    height: 200px;
+    width: 100px;
+    height: 100px;
     color: black;
     margin-bottom: 20px;
 }
 
-.box2 {
+.redoBox {
     border: 2px solid;
     margin: 20px;
-    width: 200px;
-    height: 200px;
+    width: 100px;
+    height: 100px;
     color: black;
     margin-bottom: 20px;
 }
