@@ -77,3 +77,35 @@ body {
     color: black;
     margin-bottom: 20px;
 }
+
+.arrayHolder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 110px;
+    margin-top: 3px;
+}
+
+.undoHolder {
+    display: flex;
+    gap: 5px;
+}
+
+.redoHolder {
+    display: flex;
+    gap: 5px;
+}
+
+.undoArr {
+    border: 2px solid;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.redoArr {
+    border: 2px solid;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
