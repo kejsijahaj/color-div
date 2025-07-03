@@ -12,6 +12,11 @@ let count = 0;
 let currentColor = '';
 const undoArray = [];
 const redoArray = []; 
+let dragState = {
+  sourceIndex: null,
+  sourceList: null,
+  draggedColor: null
+};
 
 // generate color
 
@@ -54,93 +59,79 @@ const clearHolders = (holder) => {
     }
 };
 
-// make div elements
+// make color elements
 
-const makeDivs = (color) => {
+const makeDivs = (color,listName) => {
     const div = document.createElement('div');
     div.className = "colorElement";
     div.style.backgroundColor = color;
     div.dataset.color = color;
+    div.dataset.list = listName;
     div.draggable = true;
     return div;
 };
 
 // drag and drop
 
-const dragAndDropWithin = () => {
+const dragAndDrop = () => {
     const items = document.querySelectorAll(".colorElement");
-
+    
     items.forEach(item => {
-        item.addEventListener("dragstart", () => {
+           
+        // track elements being dragged
+
+        items.addEventListener("dragstart", e => {
+            const dragged = e.target;
+            dragState.draggedColor = dragged.dataset.color;
+            dragState.sourceList = dragged.dataset.list;
+            const container = dragged.dataset.list === "undo" ? undoHolder : redoHolder;
+            dragState.sourceIndex = [...container.children].indexOf(dragged);
+
             setTimeout(() => {
-                item.classList.add("dragging");        
+                dragged.classList.add("dragging");        
             }, 0);
         });
 
         item.addEventListener("dragend", () => {
-            item.classList.remove("dragging");
-        })
+            document.querySelector(".dragging")?.classList.remove("dragging");
+        });
     });
 
-    const sortRedoHolder = (e) => {
-        e.preventDefault();
-        const draggingRedo = redoHolder.querySelector(".dragging");
+    const containers = [undoHolder,redoHolder];
 
-        const siblingsR = [...redoHolder.querySelectorAll(".colorElement:not(.dragging)")];
+    // drag and drop between "lists"
 
-        let nextSiblingR = siblingsR.find( sibling => {
-            const y = sibling.getBoundingClientRect();
+    containers.forEach( container => {
+        container.addEventListener("dragover", e => {
+            e.preventDefault();
+            const draggable = document.querySelector(".dragging");
+            const siblings = [...container.querySelectorAll(".colorElement:not(.dragging)")];
+            const nextSibling = siblings.find( sibling => {
+            const rect = sibling.getBoundingClientRect();
             return e.clientY <= y.top + y.height / 2;
         });
-
-        redoHolder.insertBefore(draggingRedo, nextSiblingR);
-    }
-
-    const sortUndoHolder = (e) => {
-        e.preventDefault();
-        const draggingUndo = undoHolder.querySelector(".dragging");
-        // make array of all items except currently dragging
-        const siblingsU = [...undoHolder.querySelectorAll(".colorElement:not(.dragging)")];
-
-        // find sibling after which element should be placed
-        let nextSiblingU = siblingsU.find( sibling => {
-            const x = sibling.getBoundingClientRect();
-            return e.clientY <= x.top + x.height / 2;
+            container.insertBefore(draggable, nextSibling);
         });
 
-        // insert item before found sibling
-        undoHolder.insertBefore(draggingUndo, nextSiblingU);
-    }
-    undoHolder.addEventListener("dragover", sortUndoHolder);
-    undoHolder.addEventListener("dragenter", e => e.preventDefault());
+        container.addEventListener("drop", e => {
+            const targetList = container === undoHolder ? "undo" : "redo";
+            const newIndex = [...container.children].indexOf(document.querySelector(".dragging"));
+            updateArrays (dragState.sourceList, targetList, dragState.sourceIndex,newIndex);
+            displayArray();
+            dragAndDrop();
+        })
+    })
+};
 
-    redoHolder.addEventListener("dragover", sortRedoHolder);
-    redoHolder.addEventListener("dragenter", e => e.preventDefault());
+// update arrays after drag and drop
 
-    // draggableEl.addEventListener("dragstart", e => {
-    //     e.dataTransfer.setData("text/plain",draggableEl.id);
-    // });
+const updateArrays = (sourceList, targetList, sourceIndex, targetIndex) => {
+    const sourceArray = sourceList === "undo" ? undoArray : redoArray;
+    const targetArray = targetList === "undo" ? undoArray : redoArray;
 
-    // for (const dropZone of document.querySelector("#dropZone")){
-    //     dropZone.addEventListener("dragover", e => {
-    //         e.preventDefault();
-    //         dropZone.classList.add("dropZoneOver");
-    //     });
-
-    //     dropZone.addEventListener("dragleave", e => {
-    //         dropZone.classList.remove("dropZoneOver");
-    //     });
-
-    //     dropZone.addEventListener("drop", e => {
-    //         e.preventDefault();
-    //         const droppedElId = e.dataTransfer.getData("text/plain");
-    //         const droppedEl = document.querySelector(droppedElId);
-
-    //         dropZone.appendChild(droppedEl);
-    //         dropZone.classList.remove("dropZoneOver");
-    //     })
-    // }
-}
+    const [movedColor] = sourceArray.splice(sourceIndex, 1);
+    targetArray.splice(targetIndex, 0, movedColor);
+};
 
 // display array items
 
@@ -150,14 +141,14 @@ const displayArray = () => {
     const limitedUndo = undoArray.slice(0,5); // limited to
     const limitedRedo = redoArray.slice(0,5); // 5 elements
     limitedUndo.forEach(element => {
-        undoHolder.appendChild(makeDivs(element));
+        undoHolder.appendChild(makeDivs(element,"undo"));
     });
     limitedRedo.forEach(element => {
-        redoHolder.appendChild(makeDivs(element));
+        redoHolder.appendChild(makeDivs(element,"redo"));
     });
 
-    // undoButton.disabled = !undoArray.length;
-    // redoButton.disabled = !redoArray.length;
+    undoButton.disabled = !limitedUndo.length;
+    redoButton.disabled = !limitedRedo.length;
 };
 
 // change color button functionality
@@ -173,7 +164,7 @@ colorButton.addEventListener("click", () =>{
     applyColor(newColor);
     currentColor = newColor;
     displayArray();
-    dragAndDropWithin();
+    dragAndDrop();
     });
 
 // undo function
@@ -184,7 +175,9 @@ const undo = () => {
     currentColor = undoArray.shift();
     applyColor(currentColor);
     displayArray();
-    dragAndDropWithin();
+    dragAndDrop();
+    // console.log("undo array on undo: ", undoArray)
+    // console.log("redo array on undo:", redoArray)
 }
 
 // redo function
@@ -195,7 +188,9 @@ const redo = () => {
     currentColor = redoArray.shift();
     applyColor(currentColor);
     displayArray();
-    dragAndDropWithin();
+    dragAndDrop();
+    // console.log("undo array on redo: ", undoArray)
+    // console.log("redo array on redo:", redoArray)
 }
 
 // undo button functionality

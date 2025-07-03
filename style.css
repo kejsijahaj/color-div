@@ -108,3 +108,7 @@ body {
     border-radius: 10%;
     margin: 10px;
 }
+
+.dragging {
+    opacity: 0.5;
+}
