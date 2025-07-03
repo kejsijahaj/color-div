@@ -198,4 +198,6 @@ redoButton.addEventListener("click", () => {
     redo();
 });
 
+// call drag & drop 
+
 initDragAndDrop();
