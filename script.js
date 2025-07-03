@@ -59,7 +59,6 @@ const clearHolders = (holder) => {
 const makeDivs = (color) => {
     const div = document.createElement('div');
     div.className = "colorElement";
-    div.setAttribute("id", "colorElement");
     div.style.backgroundColor = color;
     div.dataset.color = color;
     div.draggable = true;
@@ -68,32 +67,79 @@ const makeDivs = (color) => {
 
 // drag and drop
 
-const dragAndDrop = () => {
-    const draggableEl = document.querySelector("#colorElement");
+const dragAndDropWithin = () => {
+    const items = document.querySelectorAll(".colorElement");
 
-    draggableEl.addEventListener("dragstart", e => {
-        e.dataTransfer.setData("text/plain",draggableEl.id);
+    items.forEach(item => {
+        item.addEventListener("dragstart", () => {
+            setTimeout(() => {
+                item.classList.add("dragging");        
+            }, 0);
+        });
+
+        item.addEventListener("dragend", () => {
+            item.classList.remove("dragging");
+        })
     });
 
-    for (const dropZone of document.querySelector("#dropZone")){
-        dropZone.addEventListener("dragover", e => {
-            e.preventDefault();
-            dropZone.classList.add("dropZoneOver");
+    const sortRedoHolder = (e) => {
+        e.preventDefault();
+        const draggingRedo = redoHolder.querySelector(".dragging");
+
+        const siblingsR = [...redoHolder.querySelectorAll(".colorElement:not(.dragging)")];
+
+        let nextSiblingR = siblingsR.find( sibling => {
+            const y = sibling.getBoundingClientRect();
+            return e.clientY <= y.top + y.height / 2;
         });
 
-        dropZone.addEventListener("dragleave", e => {
-            dropZone.classList.remove("dropZoneOver");
-        });
-
-        dropZone.addEventListener("drop", e => {
-            e.preventDefault();
-            const droppedElId = e.dataTransfer.getData("text/plain");
-            const droppedEl = document.querySelector(droppedElId);
-
-            dropZone.appendChild(droppedEl);
-            dropZone.classList.remove("dropZoneOver");
-        })
+        redoHolder.insertBefore(draggingRedo, nextSiblingR);
     }
+
+    const sortUndoHolder = (e) => {
+        e.preventDefault();
+        const draggingUndo = undoHolder.querySelector(".dragging");
+        // make array of all items except currently dragging
+        const siblingsU = [...undoHolder.querySelectorAll(".colorElement:not(.dragging)")];
+
+        // find sibling after which element should be placed
+        let nextSiblingU = siblingsU.find( sibling => {
+            const x = sibling.getBoundingClientRect();
+            return e.clientY <= x.top + x.height / 2;
+        });
+
+        // insert item before found sibling
+        undoHolder.insertBefore(draggingUndo, nextSiblingU);
+    }
+    undoHolder.addEventListener("dragover", sortUndoHolder);
+    undoHolder.addEventListener("dragenter", e => e.preventDefault());
+
+    redoHolder.addEventListener("dragover", sortRedoHolder);
+    redoHolder.addEventListener("dragenter", e => e.preventDefault());
+
+    // draggableEl.addEventListener("dragstart", e => {
+    //     e.dataTransfer.setData("text/plain",draggableEl.id);
+    // });
+
+    // for (const dropZone of document.querySelector("#dropZone")){
+    //     dropZone.addEventListener("dragover", e => {
+    //         e.preventDefault();
+    //         dropZone.classList.add("dropZoneOver");
+    //     });
+
+    //     dropZone.addEventListener("dragleave", e => {
+    //         dropZone.classList.remove("dropZoneOver");
+    //     });
+
+    //     dropZone.addEventListener("drop", e => {
+    //         e.preventDefault();
+    //         const droppedElId = e.dataTransfer.getData("text/plain");
+    //         const droppedEl = document.querySelector(droppedElId);
+
+    //         dropZone.appendChild(droppedEl);
+    //         dropZone.classList.remove("dropZoneOver");
+    //     })
+    // }
 }
 
 // display array items
@@ -127,7 +173,7 @@ colorButton.addEventListener("click", () =>{
     applyColor(newColor);
     currentColor = newColor;
     displayArray();
-    // dragAndDrop();
+    dragAndDropWithin();
     });
 
 // undo function
@@ -138,7 +184,7 @@ const undo = () => {
     currentColor = undoArray.shift();
     applyColor(currentColor);
     displayArray();
-    // dragAndDrop();
+    dragAndDropWithin();
 }
 
 // redo function
@@ -148,10 +194,8 @@ const redo = () => {
     undoArray.unshift(currentColor);
     currentColor = redoArray.shift();
     applyColor(currentColor);
-    // redoBox.style.backgroundColor = redoArray[0];
-    // undoBox.style.backgroundColor = undoArray[0];
     displayArray();
-    // dragAndDrop();
+    dragAndDropWithin();
 }
 
 // undo button functionality

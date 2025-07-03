@@ -71,17 +71,40 @@ body {
     gap: 70px;
 }
 
-.undoHolder {
+/* .undoHolder {
     display: flex;
+} */
+
+.undoHolder {
+  display: grid;
+  grid-template-rows: repeat(5, 50px);
+}
+
+.undoHolder .item {
+    display: list-item;
+    cursor: move;
+    list-style: none;
+    margin-bottom: 11px;
+    justify-content: left;
 }
 
 .redoHolder {
-    display: flex;
+  display: grid;
+  grid-template-rows: repeat(5, 50px);
+}
+
+.redoHolder .item {
+    display: list-item;
+    cursor: move;
+    list-style: none;
+    margin-bottom: 11px;
+    justify-content: left;
 }
 
 .colorElement {
     border: 2px solid;
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     border-radius: 10%;
+    margin: 10px;
 }
