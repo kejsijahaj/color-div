@@ -27,6 +27,9 @@ body {
     height: 70px;
     margin: 100px;
     border: 2px solid;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .secondaryBoxes {
@@ -88,22 +91,13 @@ body {
 
 .undoHolder {
     display: flex;
-    gap: 5px;
 }
 
 .redoHolder {
     display: flex;
-    gap: 5px;
 }
 
-.undoArr {
-    border: 2px solid;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-}
-
-.redoArr {
+.colorCircle {
     border: 2px solid;
     width: 20px;
     height: 20px;

@@ -7,7 +7,7 @@
   </head>
   <body>
     <div class="mainBox" id="mainBox">
-        <div class="counterBox" id="counterBox" style="filter: brightness(0.4);"></div>
+        <div class="counter" id="counter">0</div>
     </div>
     <button class="colorButton" id="changeColor"> Change Color</button>
     <div class="urButtons" id="urButtons">
@@ -17,6 +17,10 @@
     <div class="secondaryBoxes" id="secondaryBoxes">
       <div class="undoBox" id="undoBox"></div>
       <div class="redoBox" id="redoBox"></div>
+    </div>
+    <div class="arrayHolder">
+      <div class="undoHolder" draggable="true"></div>
+      <div class="redoHolder" draggable="true"></div>
     </div>
     <script src="script.js"></script>
   </body>

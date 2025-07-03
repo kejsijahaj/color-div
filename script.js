@@ -1,103 +1,138 @@
 const colorBox = document.querySelector("#mainBox");
 const colorButton = document.querySelector("#changeColor");
-const urButtons = document.querySelector("#urButtons");
+const counter = document.querySelector("#counter")
 const undoButton = document.querySelector("#undoButton");
 const redoButton = document.querySelector("#redoButton");
-const secondaryBoxes = document.querySelector("#secondaryBoxes");
 const undoBox = document.querySelector("#undoBox");
 const redoBox = document.querySelector("#redoBox");
+const undoHolder = document.querySelector(".undoHolder");
+const redoHolder = document.querySelector(".redoHolder");
 
-// function that will generate random hsl color
+let count = 0; 
+let currentColor = '';
+let undoArray = [];
+let redoArray = []; 
+
+// generate color
 
 const randomColor = () => {
     const hue = Math.floor(Math.random() * 360); // range 0-359 degrees
     const saturation = Math.floor(Math.random() * 50 + 40); // range 40 - 89
     const lightness = Math.floor(Math.random() * 50 + 30); // range 30 - 79
-    const generatedColor = `hsl(${hue} ${saturation}% ${lightness}%)`;
-    return generatedColor;
-}
+    return `hsl(${hue} ${saturation}% ${lightness}%)`;
+};
 
-// arrays to store the colors for undo and redo
+// counter contrast
 
-let undoArray = [];
-let redoArray = [];
-
-let count = 0; // stores value of the color count
-let currentColor; // stores the current generated color
-
-// handle the events once change color button is clicked
-
-colorButton.addEventListener("click", () =>{
-    if (count === 0){
-        currentColor = randomColor();
-        colorBox.style.backgroundColor = currentColor;
-        count++;
+const counterContrast = (color) => {
+    const hsl = color.split(' ');
+    let lightness = parseInt(hsl[2].replace('%)',''));
+    let textLightness;
+    if(lightness > 50){
+        textLightness = Math.max(0, lightness - 40); // darken text
     }
     else {
-        undoArray.unshift(currentColor);
-        // color that was in main will be added to array
-        currentColor = randomColor();
-        colorBox.style.backgroundColor = currentColor;
-        // main frame will show generated color
-        undoBox.style.backgroundColor = undoArray[0];
-        // undo frame will display that color
-        redoArray = [];
-        redoBox.style.backgroundColor = "transparent";
-        // redo array and frame are empty
-        count++;
+        textLightness = Math.min(100, lightness + 40); // lighten text
     }
-});
+    const hue = parseInt(hsl[0].replace('hsl(',''));
+    const saturation = parseInt(hsl[1].replace('%',''));
+    return `hsl(${hue} ${saturation}% ${textLightness}%)`;
+};
+
+// apply colors
+
+const applyColor = (currentColor) => {
+    colorBox.style.backgroundColor = currentColor;
+    counter.style.color = counterContrast(currentColor);
+};
+
+// clear holders
+
+const clearHolders = (holder) => {
+    while (holder.firstChild){
+        holder.removeChild(holder.firstChild);
+    }
+};
+
+// make div elements
+
+const makeDivs = (color) => {
+    const div = document.createElement('div');
+    div.className = "colorCircle";
+    div.style.backgroundColor = color;
+    div.dataset.color = color;
+    return div;
+};
+
+// display array items
+
+const displayArray = () => {
+    clearHolders(undoHolder);
+    clearHolders(redoHolder);
+    undoArray.forEach(element => {
+        undoHolder.appendChild(makeDivs(element));
+    });
+    redoArray.forEach(element => {
+        redoHolder.appendChild(makeDivs(element));
+    });
+
+    // undoButton.disabled = !undoArray.length;
+    // redoButton.disabled = !redoArray.length;
+};
+
+// change color button functionality
+
+colorButton.addEventListener("click", () =>{
+    const newColor = randomColor();
+    if(currentColor){
+        undoArray.unshift(currentColor);
+    }
+    count++;
+    counter.textContent = count;
+    applyColor(newColor);
+    redoBox.style.backgroundColor = redoArray[0];
+    undoBox.style.backgroundColor = undoArray[0];
+    currentColor = newColor;
+    displayArray();
+    });
 
 // undo function
 
-const undoFunction = () => {
-    if (undoArray.length > 0){
-        redoArray.unshift(currentColor);
-        // we added current main color to redo array 
-        currentColor = undoArray.shift();
-        // color is now the first color of undo array
-        colorBox.style.backgroundColor = currentColor;
-        undoBox.style.backgroundColor = undoArray[0];
-        // undo array has first remaining color
-        redoBox.style.backgroundColor = redoArray[0];
-        // redo array has initial current color
-    }
+const undo = () => {
+    if (undoArray.length === 0) return;
+    redoArray.unshift(currentColor);
+    currentColor = undoArray.shift();
+    applyColor(currentColor);
+    undoBox.style.backgroundColor = undoArray[0];
+    redoBox.style.backgroundColor = redoArray[0];
+    displayArray();
 }
 
 // redo function
 
-const redoFunction = () => {
-    if (redoArray.length > 0) {
-        undoArray.unshift(currentColor);
-        currentColor = redoArray.shift();
-        // new color is first of redo array
-        colorBox.style.backgroundColor = currentColor;
-        // we set it to main frame
-        redoBox.style.backgroundColor = redoArray[0];
-        // redo will have first element of redo array
-        undoBox.style.backgroundColor = undoArray[0];
-        // undo first element of undo array
-  }
+const redo = () => {
+    if (redoArray.length === 0) return;
+    undoArray.unshift(currentColor);
+    currentColor = redoArray.shift();
+    applyColor(currentColor);
+    redoBox.style.backgroundColor = redoArray[0];
+    undoBox.style.backgroundColor = undoArray[0];
+    displayArray();
 }
-
-// to show what colors lay in the arrays
-
-const divElements = () => {
-    let div = document.createElement("div");
-    div.classList.add("undoElements");
-    document.body.append(div);
-}
-
-undoArray.map(divElements);
 
 // undo button functionality
 
 undoButton.addEventListener("click", () => {
-    undoFunction();
+    undo();
 });
 
 // redo button functionality
 
 redoButton.addEventListener("click", () => {
-    redoFunction();
+    redo();
 });
+
+// drag and drop within lists
+
+// drag and drop between lists
+
