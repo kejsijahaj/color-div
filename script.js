@@ -12,11 +12,9 @@ let count = 0;
 let currentColor = '';
 const undoArray = [];
 const redoArray = []; 
-let dragState = {
-  sourceIndex: null,
-  sourceList: null,
-  draggedColor: null
-};
+let sourceIndex = null;
+let sourceList = null;
+let draggedColor = null;
 
 // generate color
 
@@ -68,60 +66,62 @@ const makeDivs = (color,listName) => {
     div.dataset.color = color;
     div.dataset.list = listName;
     div.draggable = true;
+
+    div.addEventListener("dragstart", handleDragStart);
+    div.addEventListener("dragend", handleDragEnd);
+
     return div;
 };
 
 // drag and drop
 
-const dragAndDrop = () => {
-    const items = document.querySelectorAll(".colorElement");
-    
-    items.forEach(item => {
-           
-        // track elements being dragged
+const handleDragStart = (e) => {
+    dragged = e.target;
+    sourceList = dragged.dataset.list;
+    sourceIndex = [...dragged.parentElement.children].indexOf(dragged);
+    e.target.classList.add("dragging");
+}
 
-        items.addEventListener("dragstart", e => {
-            const dragged = e.target;
-            dragState.draggedColor = dragged.dataset.color;
-            dragState.sourceList = dragged.dataset.list;
-            const container = dragged.dataset.list === "undo" ? undoHolder : redoHolder;
-            dragState.sourceIndex = [...container.children].indexOf(dragged);
+const handleDragEnd = () => {
+    dragged.classList.remove("dragging");
+    dragged = null;
+}
 
-            setTimeout(() => {
-                dragged.classList.add("dragging");        
-            }, 0);
-        });
+const handleDragOver = (e) => {
+    e.preventDefault();
+    if (!dragged) return;
 
-        item.addEventListener("dragend", () => {
-            document.querySelector(".dragging")?.classList.remove("dragging");
-        });
-    });
+    const holder = e.currentTarget;
+    const siblings = [...holder.querySelectorAll(".colorElement:not(.dragging)")];
 
-    const containers = [undoHolder,redoHolder];
-
-    // drag and drop between "lists"
-
-    containers.forEach( container => {
-        container.addEventListener("dragover", e => {
-            e.preventDefault();
-            const draggable = document.querySelector(".dragging");
-            const siblings = [...container.querySelectorAll(".colorElement:not(.dragging)")];
-            const nextSibling = siblings.find( sibling => {
-            const rect = sibling.getBoundingClientRect();
-            return e.clientY <= y.top + y.height / 2;
-        });
-            container.insertBefore(draggable, nextSibling);
-        });
-
-        container.addEventListener("drop", e => {
-            const targetList = container === undoHolder ? "undo" : "redo";
-            const newIndex = [...container.children].indexOf(document.querySelector(".dragging"));
-            updateArrays (dragState.sourceList, targetList, dragState.sourceIndex,newIndex);
-            displayArray();
-            dragAndDrop();
-        })
+    const next = siblings.find(sib => {
+        const rect = sib.getBoundingClientRect();
+        return e.clientY <= rect.top + rect.height / 2;
     })
-};
+
+    holder.insertBefore(dragged, next || null);
+}
+
+const handleDrop = (e) => {
+    const holder = e.currentTarget;
+    const targetList = holder === undoHolder ? "undo" : "redo";
+    const targetIndex = [...holder.children].indexOf(dragged);
+
+    updateArrays(sourceList, targetList, sourceIndex, targetIndex);
+    displayArray();
+
+    dragged = null; // clear leftovers
+}
+
+const initDragAndDrop = () => {
+  [undoHolder, redoHolder].forEach(holder => {
+    holder.addEventListener('dragover', handleDragOver);
+    holder.addEventListener('drop',     handleDrop);
+  });
+}
+
+// call it once, after the DOM is ready
+initDragAndDrop();
 
 // update arrays after drag and drop
 
@@ -164,7 +164,6 @@ colorButton.addEventListener("click", () =>{
     applyColor(newColor);
     currentColor = newColor;
     displayArray();
-    dragAndDrop();
     });
 
 // undo function
@@ -175,9 +174,6 @@ const undo = () => {
     currentColor = undoArray.shift();
     applyColor(currentColor);
     displayArray();
-    dragAndDrop();
-    // console.log("undo array on undo: ", undoArray)
-    // console.log("redo array on undo:", redoArray)
 }
 
 // redo function
@@ -188,9 +184,6 @@ const redo = () => {
     currentColor = redoArray.shift();
     applyColor(currentColor);
     displayArray();
-    dragAndDrop();
-    // console.log("undo array on redo: ", undoArray)
-    // console.log("redo array on redo:", redoArray)
 }
 
 // undo button functionality
@@ -204,3 +197,5 @@ undoButton.addEventListener("click", () => {
 redoButton.addEventListener("click", () => {
     redo();
 });
+
+initDragAndDrop();
