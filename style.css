@@ -10,6 +10,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 70vh;
+    margin-top: 70px;
 }
 
 .mainBox {
@@ -63,30 +64,11 @@ body {
     padding: 10px 10px;
 }
 
-.undoBox {
-    border: 2px solid;
-    margin: 20px;
-    width: 100px;
-    height: 100px;
-    color: black;
-    margin-bottom: 20px;
-}
-
-.redoBox {
-    border: 2px solid;
-    margin: 20px;
-    width: 100px;
-    height: 100px;
-    color: black;
-    margin-bottom: 20px;
-}
-
 .arrayHolder {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 110px;
-    margin-top: 3px;
+    gap: 70px;
 }
 
 .undoHolder {
@@ -97,9 +79,9 @@ body {
     display: flex;
 }
 
-.colorCircle {
+.colorElement {
     border: 2px solid;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    border-radius: 10%;
 }

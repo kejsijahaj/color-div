@@ -10,8 +10,8 @@ const redoHolder = document.querySelector(".redoHolder");
 
 let count = 0; 
 let currentColor = '';
-let undoArray = [];
-let redoArray = []; 
+const undoArray = [];
+const redoArray = []; 
 
 // generate color
 
@@ -58,21 +58,55 @@ const clearHolders = (holder) => {
 
 const makeDivs = (color) => {
     const div = document.createElement('div');
-    div.className = "colorCircle";
+    div.className = "colorElement";
+    div.setAttribute("id", "colorElement");
     div.style.backgroundColor = color;
     div.dataset.color = color;
+    div.draggable = true;
     return div;
 };
+
+// drag and drop
+
+const dragAndDrop = () => {
+    const draggableEl = document.querySelector("#colorElement");
+
+    draggableEl.addEventListener("dragstart", e => {
+        e.dataTransfer.setData("text/plain",draggableEl.id);
+    });
+
+    for (const dropZone of document.querySelector("#dropZone")){
+        dropZone.addEventListener("dragover", e => {
+            e.preventDefault();
+            dropZone.classList.add("dropZoneOver");
+        });
+
+        dropZone.addEventListener("dragleave", e => {
+            dropZone.classList.remove("dropZoneOver");
+        });
+
+        dropZone.addEventListener("drop", e => {
+            e.preventDefault();
+            const droppedElId = e.dataTransfer.getData("text/plain");
+            const droppedEl = document.querySelector(droppedElId);
+
+            dropZone.appendChild(droppedEl);
+            dropZone.classList.remove("dropZoneOver");
+        })
+    }
+}
 
 // display array items
 
 const displayArray = () => {
     clearHolders(undoHolder);
     clearHolders(redoHolder);
-    undoArray.forEach(element => {
+    const limitedUndo = undoArray.slice(0,5); // limited to
+    const limitedRedo = redoArray.slice(0,5); // 5 elements
+    limitedUndo.forEach(element => {
         undoHolder.appendChild(makeDivs(element));
     });
-    redoArray.forEach(element => {
+    limitedRedo.forEach(element => {
         redoHolder.appendChild(makeDivs(element));
     });
 
@@ -87,13 +121,13 @@ colorButton.addEventListener("click", () =>{
     if(currentColor){
         undoArray.unshift(currentColor);
     }
+    redoArray.length = 0;
     count++;
     counter.textContent = count;
     applyColor(newColor);
-    redoBox.style.backgroundColor = redoArray[0];
-    undoBox.style.backgroundColor = undoArray[0];
     currentColor = newColor;
     displayArray();
+    // dragAndDrop();
     });
 
 // undo function
@@ -103,9 +137,8 @@ const undo = () => {
     redoArray.unshift(currentColor);
     currentColor = undoArray.shift();
     applyColor(currentColor);
-    undoBox.style.backgroundColor = undoArray[0];
-    redoBox.style.backgroundColor = redoArray[0];
     displayArray();
+    // dragAndDrop();
 }
 
 // redo function
@@ -115,9 +148,10 @@ const redo = () => {
     undoArray.unshift(currentColor);
     currentColor = redoArray.shift();
     applyColor(currentColor);
-    redoBox.style.backgroundColor = redoArray[0];
-    undoBox.style.backgroundColor = undoArray[0];
+    // redoBox.style.backgroundColor = redoArray[0];
+    // undoBox.style.backgroundColor = undoArray[0];
     displayArray();
+    // dragAndDrop();
 }
 
 // undo button functionality
@@ -131,8 +165,3 @@ undoButton.addEventListener("click", () => {
 redoButton.addEventListener("click", () => {
     redo();
 });
-
-// drag and drop within lists
-
-// drag and drop between lists
-
