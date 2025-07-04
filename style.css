@@ -1,3 +1,7 @@
+html {
+    font-size: 62.5%;
+}
+
 *{
     margin: 0;
     padding: 0;
@@ -9,71 +13,132 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 70vh;
-    margin-top: 70px;
+    margin-top: 5rem;
+    background-color: rgba(245, 245, 245, 0.91);
 }
 
 .mainBox {
-    border: 2px solid;
-    margin: 20px;
+    border: 20px solid;
+    border-bottom: 70px solid;
+    margin: 2rem;
     width: 300px;
     height: 300px;
-    color: black;
-    margin-bottom: 20px;
+    color: white;
+    background-color: whitesmoke;
+    margin-bottom: 2rem;
+    box-shadow: 0.5rem .5rem 1.5rem darkgray;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .counter {
-    color:red;
-    width: 100px;
-    height: 70px;
-    margin: 100px;
-    border: 2px solid;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.secondaryBoxes {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 70px;
+    color:black;
+    font-size: xx-large;
+    font-weight: bold;
 }
 
 .colorButton {
-    color: green;
-    padding: 10px 10px;
+  background-color: #fff;
+  border: 1px solid #d5d9d9;
+  border-radius: 8px;
+  box-shadow: darkgrey .5rem .2rem .5rem .2rem;
+  box-sizing: border-box;
+  color: black;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  margin-top: 1rem;
+  padding: 1rem;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  width: 150px;
+}
 
+.colorButton:hover {
+  background-color: #f7fafa;
+}
+
+.colorButton:active {
+  background-color: rgba(206, 201, 201, 0.911);
+  box-shadow: 2px 2px 2px 2px #848383;
+  transform: translateY(4px);
 }
 
 .urButtons {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 80px;
-    margin-top: 50px;
+    gap: 27rem;
+    margin-top: .1rem;
 }
 
 .undoButton {
-    color: green;
-    padding: 10px 10px;
+  background-color: #fff;
+  border: 1px solid #d5d9d9;
+  border-radius: 15px;
+  box-shadow: darkgrey .5rem .2rem .5rem .2rem;
+  box-sizing: border-box;
+  color: black;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  margin: 1rem;
+  padding: 1rem;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  width: 70px;
+}
+
+.undoButton:hover {
+  background-color: #f7fafa;
+}
+
+.undoButton:active {
+  background-color: rgba(206, 201, 201, 0.911);
+  box-shadow: 2px 2px 2px 2px #848383;
+  transform: translateY(4px);
 }
 
 .redoButton {
-    color: green;
-    padding: 10px 10px;
+  background-color: #fff;
+  border: 1px solid #d5d9d9;
+  border-radius: 15px;
+  box-shadow: darkgrey .5rem .2rem .5rem .2rem;
+  box-sizing: border-box;
+  color: black;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  margin: 1rem;
+  padding: 1rem;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  width: 70px;
+}
+
+.redoButton:hover {
+  background-color: #f7fafa;
+}
+
+.redoButton:active {
+  background-color: rgba(206, 201, 201, 0.911);
+  box-shadow: 2px 2px 2px 2px #848383;
+  transform: translateY(4px);
 }
 
 .arrayHolder {
     display: flex;
-    justify-content: center;
+    justify-content: left;
     align-items: center;
-    gap: 70px;
+    gap: 40rem;
 }
-
-/* .undoHolder {
-    display: flex;
-} */
 
 .undoHolder {
   display: grid;
@@ -84,7 +149,7 @@ body {
     display: list-item;
     cursor: move;
     list-style: none;
-    margin-bottom: 11px;
+    margin-bottom: 1rem;
     justify-content: left;
 }
 
@@ -97,18 +162,37 @@ body {
     display: list-item;
     cursor: move;
     list-style: none;
-    margin-bottom: 11px;
+    margin-bottom: 1rem;
     justify-content: left;
 }
 
 .colorElement {
-    border: 2px solid;
-    width: 40px;
-    height: 40px;
-    border-radius: 10%;
-    margin: 10px;
+    border: 1px solid;
+    width: 45px;
+    height: 45px;
+    border-radius: 15%;
+    margin: 1rem;
 }
 
 .dragging {
     opacity: 0.5;
+}
+
+@media (max-width: 500px){
+    html {
+        font-size: 37.5%;
+    }
+
+    .mainbox {
+        width: 50px;
+        height: 50px;
+        border: 10px solid;
+        border-bottom: 30px solid;
+        margin: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0.5rem .5rem 1.5rem darkgray;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 }

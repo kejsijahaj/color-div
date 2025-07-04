@@ -14,7 +14,8 @@ const undoArray = [];
 const redoArray = []; 
 let sourceIndex = null;
 let sourceList = null;
-let draggedColor = null;
+let dragged = null;
+let touched = null;  //LMAO
 
 // generate color
 
@@ -67,8 +68,16 @@ const makeDivs = (color,listName) => {
     div.dataset.list = listName;
     div.draggable = true;
 
+    // mouse events 
+
     div.addEventListener("dragstart", handleDragStart);
     div.addEventListener("dragend", handleDragEnd);
+
+    // touchscreen events
+
+    div.addEventListener("touchstart", handleTouchStart, {passive: false});
+    div.addEventListener("touchend", handleTouchEnd, {passive: false});
+    div.addEventListener("touchmove", handleTouchMove, {passive: false});
 
     return div;
 };
@@ -120,8 +129,59 @@ const initDragAndDrop = () => {
   });
 }
 
-// call it once, after the DOM is ready
+// call it once
+
 initDragAndDrop();
+
+// touchscreen drag and drop
+
+const handleTouchMove = (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+
+    dragged.style.left = touch.pageX - dragged.offsetWidth / 2 + "px";
+    dragged.style.top = touch.pageY - dragged.offsetHeight / 2 + "px";
+};
+
+const handleTouchStart = (e) => {
+    e.preventDefault();
+
+    dragged = e.target;
+    sourceList = dragged.dataset.list;
+    sourceIndex = [...dragged.parentElement.children].indexOf(dragged);
+    
+    dragged.style.position = "absolute";
+    dragged.style.zIndex = "1000";
+}
+
+const handleTouchEnd = (e) => {
+    const touch = e.changedTouches[0];
+    let dropped = false;
+
+    [undoHolder, redoHolder].forEach(holder => {
+    const rect = holder.getBoundingClientRect();
+    if (
+        touch.clientX >= rect.left &&
+        touch.clientX <= rect.right &&
+        touch.clientY >= rect.top &&
+        touch.clientY <= rect.bottom
+    ){
+    const targetList = holder === undoHolder ? "undo" : "redo";
+    const targetIndex = [...holder.children].indexOf(dragged);
+
+    updateArrays(sourceList, targetList, sourceIndex, targetIndex);
+    dropped = true;
+    }
+  });
+
+    displayArray();
+
+    dragged.style.left = "";
+    dragged.style.top = "";
+    dragged.style.position = "static";
+    dragged.style.zIndex = "";
+    dragged = null;
+}
 
 // update arrays after drag and drop
 
