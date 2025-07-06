@@ -135,63 +135,82 @@ initDragAndDrop();
 
 // touchscreen drag and drop
 
-const handleTouchMove = (e) => {
-    e.preventDefault();
-    const touch = e.touches[0];
+const getInsertIndex = (holder, yCoord) => {
+  const siblings = [...holder.querySelectorAll('.colorElement:not(.dragging)')];
 
-    dragged.style.left = touch.pageX - dragged.offsetWidth / 2 + "px";
-    dragged.style.top = touch.pageY - dragged.offsetHeight / 2 + "px";
+  const next = siblings.find(el => {
+    const r = el.getBoundingClientRect();
+    return yCoord <= r.top + r.height / 2;
+  });
+
+  return next ? siblings.indexOf(next) : siblings.length;  
 };
 
 const handleTouchStart = (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  dragged      = e.target;
+  sourceList   = dragged.dataset.list;
+  sourceIndex  = [...dragged.parentElement.children].indexOf(dragged);
 
-    dragged = e.target;
-    sourceList = dragged.dataset.list;
-    sourceIndex = [...dragged.parentElement.children].indexOf(dragged);
-    
-    dragged.style.position = "absolute";
-    dragged.style.zIndex = "1000";
-}
+  dragged.classList.add('dragging');
+  dragged.style.position = 'absolute';
+  dragged.style.zIndex   = 1000;
+};
+
+const handleTouchMove = (e) => {
+  e.preventDefault();
+  const t = e.touches[0];
+  dragged.style.left = t.pageX - dragged.offsetWidth  / 2 + 'px';
+  dragged.style.top  = t.pageY - dragged.offsetHeight / 2 + 'px';
+};
 
 const handleTouchEnd = (e) => {
-    const touch = e.changedTouches[0];
-    let dropped = false;
+  const t = e.changedTouches[0];
+  let hit = null;   
 
-    [undoHolder, redoHolder].forEach(holder => {
-    const rect = holder.getBoundingClientRect();
-    if (
-        touch.clientX >= rect.left &&
-        touch.clientX <= rect.right &&
-        touch.clientY >= rect.top &&
-        touch.clientY <= rect.bottom
-    ){
-    const targetList = holder === undoHolder ? "undo" : "redo";
-    const targetIndex = [...holder.children].indexOf(dragged);
-
-    updateArrays(sourceList, targetList, sourceIndex, targetIndex);
-    dropped = true;
+  [undoHolder, redoHolder].forEach(holder => {
+    const r = holder.getBoundingClientRect();
+    if (t.clientX >= r.left && t.clientX <= r.right &&
+        t.clientY >= r.top  && t.clientY <= r.bottom) {
+      hit = holder;
     }
   });
 
-    displayArray();
+  if (hit) {
+    const targetList  = hit === undoHolder ? 'undo' : 'redo';
+    const insertIndex = getInsertIndex(hit, t.clientY);   
 
-    dragged.style.left = "";
-    dragged.style.top = "";
-    dragged.style.position = "static";
-    dragged.style.zIndex = "";
-    dragged = null;
-}
+    updateArrays(sourceList, targetList, sourceIndex, insertIndex);
+  }
+
+  displayArray();                     
+
+  dragged.classList.remove('dragging');
+  dragged.style.left = dragged.style.top = '';
+  dragged.style.position = 'static';
+  dragged.style.zIndex   = '';
+  dragged = null;
+};
 
 // update arrays after drag and drop
 
-const updateArrays = (sourceList, targetList, sourceIndex, targetIndex) => {
-    const sourceArray = sourceList === "undo" ? undoArray : redoArray;
-    const targetArray = targetList === "undo" ? undoArray : redoArray;
+const updateArrays = (sourceList, targetList, sourceIndex, insertIndex) => {
+  const sourceArray = sourceList === 'undo' ? undoArray : redoArray;
+  const targetArray = targetList === 'undo' ? undoArray : redoArray;
 
-    const [movedColor] = sourceArray.splice(sourceIndex, 1);
-    targetArray.splice(targetIndex, 0, movedColor);
+  const [moved] = sourceArray.splice(sourceIndex, 1);
+
+  if (sourceArray === targetArray && insertIndex > sourceIndex) {
+    insertIndex -= 1;         
+  }
+
+  if (insertIndex >= targetArray.length) {
+    targetArray.push(moved);  
+  } else {
+    targetArray.splice(insertIndex, 0, moved);
+  }
 };
+
 
 // display array items
 
