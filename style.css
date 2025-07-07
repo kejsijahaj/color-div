@@ -46,8 +46,8 @@ body {
   box-sizing: border-box;
   color: black;
   cursor: pointer;
-  font-size: 13px;
-  font-weight: bold;
+  font-size: 15px;
+  font-weight: bolder;
   margin-top: 1rem;
   padding: 1rem;
   position: relative;
@@ -58,7 +58,7 @@ body {
 }
 
 .colorButton:hover {
-  background-color: #f7fafa;
+  background-color: #e2e3e3;
 }
 
 .colorButton:active {
@@ -95,7 +95,7 @@ body {
 }
 
 .undoButton:hover {
-  background-color: #f7fafa;
+  background-color: #e2e3e3;
 }
 
 .undoButton:active {
@@ -124,7 +124,7 @@ body {
 }
 
 .redoButton:hover {
-  background-color: #f7fafa;
+  background-color: #e2e3e3;
 }
 
 .redoButton:active {
@@ -178,21 +178,75 @@ body {
     opacity: 0.5;
 }
 
-@media (max-width: 500px){
-    html {
-        font-size: 37.5%;
-    }
+#undoSidebar{
+  display: none;
+}
 
-    .mainbox {
-        width: 50px;
-        height: 50px;
-        border: 10px solid;
-        border-bottom: 30px solid;
-        margin: 1rem;
-        margin-bottom: 1rem;
-        box-shadow: 0.5rem .5rem 1.5rem darkgray;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+#redoSidebar{
+  display: none;
+}
+
+/* mobile styling */
+
+@media (max-width: 500px){
+
+.arrayHolder { display: none; }
+
+#undoSidebar{
+  display: block;
+}
+
+#redoSidebar{
+  display: block;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 75vw;
+  max-width: 280px;
+  padding: 1.2rem .8rem;
+  background: #fff;
+  box-shadow: 0 0 15px rgba(0,0,0,.25);
+  overflow-y: auto;
+  z-index: 2000;
+  transition: transform .3s ease;
+}
+
+.sidebar.undo { left: 0;  transform: translateX(-100%); }
+.sidebar.redo { right: 0; transform: translateX( 100%); }
+
+.sidebar.active { transform: translateX(0); }
+
+.panelHeading { text-align:center; margin:0 0 1rem; font-size:1.6rem; }
+.sidebarList  { display:flex; flex-direction:column; gap:.8rem; }
+
+#sidebarMask {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.35);
+  z-index: 1500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+
+#sidebarMask.visible { opacity: 1; pointer-events: auto; }
+
+.colorButton{
+  padding-block: 30px;
+}
+
+.redoButton{
+  margin-left: 0px;
+}
+
+.urButtons {
+    gap: 17rem;
+    margin-top: 20px;
+}
+
+.undoButton, .redoButton{
+padding-block: 20px;
+}
 }

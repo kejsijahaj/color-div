@@ -5,7 +5,6 @@
     <meta name="viewport" content="width = device-width, initial-scale=1.0">
     <title>Color Div</title>
     <link rel="stylesheet" href="style.css" />
-    <!-- <link rel="stylesheet" href="queries.css" /> -->
   </head>
   <body>
     <div class="mainBox" id="mainBox">
@@ -20,6 +19,19 @@
       <div class="undoHolder" draggable="true"></div>
       <div class="redoHolder" draggable="true"></div>
     </div>
+
+    <aside id="undoSidebar" class="sidebar undo">
+      <h3 class="panelHeading">Undo history</h3>
+      <div id="undoSidebarList" class="sidebarList"></div>
+    </aside>
+
+    <aside id="redoSidebar" class="sidebar redo">
+      <h3 class="panelHeading">Redo history</h3>
+      <div id="redoSidebarList" class="sidebarList"></div>
+    </aside>
+
+    <div id="sidebarMask" role="presentation"></div>
+
     <script src="script.js"></script>
   </body>
 </html>

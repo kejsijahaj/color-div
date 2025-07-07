@@ -7,6 +7,12 @@ const undoBox = document.querySelector("#undoBox");
 const redoBox = document.querySelector("#redoBox");
 const undoHolder = document.querySelector(".undoHolder");
 const redoHolder = document.querySelector(".redoHolder");
+const undoSidebar     = document.getElementById('undoSidebar');
+const redoSidebar     = document.getElementById('redoSidebar');
+const undoSidebarList = document.getElementById('undoSidebarList');
+const redoSidebarList = document.getElementById('redoSidebarList');
+const sidebarMask     = document.getElementById('sidebarMask');
+const mqMobile = window.matchMedia('(max-width: 500px)');
 
 let count = 0; 
 let currentColor = '';
@@ -15,7 +21,9 @@ const redoArray = [];
 let sourceIndex = null;
 let sourceList = null;
 let dragged = null;
-let touched = null;  //LMAO
+let tSourceList  = null; 
+let tSourceIndex = null;   
+let tStartX = 0, tStartY = 0;
 
 // generate color
 
@@ -74,10 +82,7 @@ const makeDivs = (color,listName) => {
     div.addEventListener("dragend", handleDragEnd);
 
     // touchscreen events
-
-    div.addEventListener("touchstart", handleTouchStart, {passive: false});
-    div.addEventListener("touchend", handleTouchEnd, {passive: false});
-    div.addEventListener("touchmove", handleTouchMove, {passive: false});
+    div.addEventListener('touchstart', panelTouchStart, { passive:false }); // passive false to use prevent default
 
     return div;
 };
@@ -119,7 +124,7 @@ const handleDrop = (e) => {
     updateArrays(sourceList, targetList, sourceIndex, targetIndex);
     displayArray();
 
-    dragged = null; // clear leftovers
+    dragged = null; // clean up
 }
 
 const initDragAndDrop = () => {
@@ -135,82 +140,141 @@ initDragAndDrop();
 
 // touchscreen drag and drop
 
-const getInsertIndex = (holder, yCoord) => {
+
+function populateSidebars() {
+  if (!mqMobile.matches) return;          // nothing to do on desktop
+
+  undoSidebarList.innerHTML = '';
+  redoSidebarList.innerHTML = '';
+
+  undoArray.forEach(c => undoSidebarList.appendChild(makeDivs(c, 'undo')));
+  redoArray.forEach(c => redoSidebarList.appendChild(makeDivs(c, 'redo')));
+}
+
+function openSidebar(sidebarChoice) {
+  if (sidebarChoice === 'undo') {
+    redoSidebar.classList.remove('active');
+    undoSidebar.classList.add('active');
+  } else {
+    undoSidebar.classList.remove('active');
+    redoSidebar.classList.add('active');
+  }
+  sidebarMask.classList.add('visible');
+  populateSidebars();
+}
+
+function closeSidebars() {
+  undoSidebar.classList.remove('active');
+  redoSidebar.classList.remove('active');
+  sidebarMask.classList.remove('visible');
+}
+sidebarMask.addEventListener('click', closeSidebars);
+
+// swipe to open 
+
+let touchStartX = 0, touchStartT = 0;
+const LEFT_EDGE = 25, DIST = 60,   TIME = 500;
+
+document.addEventListener('touchstart', e => {
+  if (!mqMobile.matches) return;
+  const t = e.touches[0];
+  touchStartX = t.clientX;
+  touchStartT = Date.now();
+}, { passive:true });
+
+document.addEventListener('touchend', e => {
+  if (!mqMobile.matches) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dt = Date.now() - touchStartT;
+  if (dt > TIME || Math.abs(dx) < DIST) return;
+
+  RIGHT_EDGE = window.innerWidth - LEFT_EDGE
+
+  const fromLeft  = touchStartX < LEFT_EDGE  && dx > 0;
+  const fromRight = touchStartX > RIGHT_EDGE && dx < 0;
+
+  if (fromLeft)  openSidebar('undo');
+  if (fromRight) openSidebar('redo');
+}, { passive:true });
+
+function panelTouchStart(e) {
+  if (!mqMobile.matches) return;
+
+  const touch = e.touches[0];
+  dragged = e.currentTarget;              
+  dragged.classList.add('dragging');
+
+  tSourceList  = dragged.dataset.list;
+  tSourceIndex = [...dragged.parentElement.children].indexOf(dragged);
+
+  dragged.style.left = dragged.offsetLeft + 'px';
+  dragged.style.top  = dragged.offsetTop  + 'px';
+
+  tStartX = touch.clientX;
+  tStartY = touch.clientY;
+
+  document.addEventListener('touchmove', panelTouchMove, { passive:false });
+  document.addEventListener('touchend',  panelTouchEnd,  { passive:false });
+}
+
+function panelTouchMove(e) {
+  e.preventDefault();               
+  const touch = e.touches[0];
+
+  dragged.style.left = touch.pageX - 22.5 + 'px'; // 45/2 cause 45px is my
+  dragged.style.top  = touch.pageY - 22.5 + 'px'; // element size
+  const holder = tSourceList === 'undo' ? undoSidebarList : redoSidebarList;
   const siblings = [...holder.querySelectorAll('.colorElement:not(.dragging)')];
 
-  const next = siblings.find(el => {
-    const r = el.getBoundingClientRect();
-    return yCoord <= r.top + r.height / 2;
+  const next = siblings.find(sib => {
+    const r = sib.getBoundingClientRect();
+    return touch.clientY <= r.top + r.height / 2;
   });
+  holder.insertBefore(dragged, next || null);
+}
 
-  return next ? siblings.indexOf(next) : siblings.length;  
-};
+function panelTouchEnd(e) {
+  document.removeEventListener('touchmove', panelTouchMove);
+  document.removeEventListener('touchend',  panelTouchEnd);
 
-const handleTouchStart = (e) => {
-  e.preventDefault();
-  dragged      = e.target;
-  sourceList   = dragged.dataset.list;
-  sourceIndex  = [...dragged.parentElement.children].indexOf(dragged);
+  const touch = e.changedTouches[0];
+  const undoRect = undoSidebar.getBoundingClientRect();
+  const redoRect = redoSidebar.getBoundingClientRect();
 
-  dragged.classList.add('dragging');
-  dragged.style.position = 'absolute';
-  dragged.style.zIndex   = 1000;
-};
+  let targetList, targetIndex;
 
-const handleTouchMove = (e) => {
-  e.preventDefault();
-  const t = e.touches[0];
-  dragged.style.left = t.pageX - dragged.offsetWidth  / 2 + 'px';
-  dragged.style.top  = t.pageY - dragged.offsetHeight / 2 + 'px';
-};
-
-const handleTouchEnd = (e) => {
-  const t = e.changedTouches[0];
-  let hit = null;   
-
-  [undoHolder, redoHolder].forEach(holder => {
-    const r = holder.getBoundingClientRect();
-    if (t.clientX >= r.left && t.clientX <= r.right &&
-        t.clientY >= r.top  && t.clientY <= r.bottom) {
-      hit = holder;
-    }
-  });
-
-  if (hit) {
-    const targetList  = hit === undoHolder ? 'undo' : 'redo';
-    const insertIndex = getInsertIndex(hit, t.clientY);   
-
-    updateArrays(sourceList, targetList, sourceIndex, insertIndex);
+  if (touch.clientX < undoRect.left) {               
+    targetList  = 'redo';
+    targetIndex = redoArray.length;                    
+  } else if (touch.clientX > redoRect.right) { 
+    targetList  = 'undo';
+    targetIndex = undoArray.length;
+  } else {
+    const parentIsUndo = dragged.parentElement === undoSidebarList;
+    targetList  = parentIsUndo ? 'undo' : 'redo';
+    targetIndex = [...dragged.parentElement.children].indexOf(dragged);
   }
+  updateArrays(tSourceList, targetList, tSourceIndex, targetIndex);
 
-  displayArray();                     
+  //clean up
 
   dragged.classList.remove('dragging');
-  dragged.style.left = dragged.style.top = '';
-  dragged.style.position = 'static';
-  dragged.style.zIndex   = '';
+  dragged.removeAttribute('style');      
   dragged = null;
-};
+
+  populateSidebars();
+  displayArray();
+}
 
 // update arrays after drag and drop
 
-const updateArrays = (sourceList, targetList, sourceIndex, insertIndex) => {
-  const sourceArray = sourceList === 'undo' ? undoArray : redoArray;
-  const targetArray = targetList === 'undo' ? undoArray : redoArray;
+const updateArrays = (sourceList, targetList, sourceIndex, targetIndex) => {
+    const sourceArray = sourceList === "undo" ? undoArray : redoArray;
+    const targetArray = targetList === "undo" ? undoArray : redoArray;
 
-  const [moved] = sourceArray.splice(sourceIndex, 1);
-
-  if (sourceArray === targetArray && insertIndex > sourceIndex) {
-    insertIndex -= 1;         
-  }
-
-  if (insertIndex >= targetArray.length) {
-    targetArray.push(moved);  
-  } else {
-    targetArray.splice(insertIndex, 0, moved);
-  }
+    const [movedColor] = sourceArray.splice(sourceIndex, 1);
+    targetArray.splice(targetIndex, 0, movedColor);
 };
-
 
 // display array items
 
@@ -228,9 +292,11 @@ const displayArray = () => {
 
     undoButton.disabled = !limitedUndo.length;
     redoButton.disabled = !limitedRedo.length;
+
+    populateSidebars(); 
 };
 
-// change color button functionality
+// "change color" button functionality
 
 colorButton.addEventListener("click", () =>{
     const newColor = randomColor();
@@ -265,13 +331,13 @@ const redo = () => {
     displayArray();
 }
 
-// undo button functionality
+// "undo button" functionality
 
 undoButton.addEventListener("click", () => {
     undo();
 });
 
-// redo button functionality
+// "redo button" functionality
 
 redoButton.addEventListener("click", () => {
     redo();
