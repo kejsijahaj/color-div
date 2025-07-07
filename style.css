@@ -13,7 +13,8 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-top: 5rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
     background-color: rgba(245, 245, 245, 0.91);
 }
 
@@ -71,7 +72,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 27rem;
+    gap: 10rem;
     margin-top: .1rem;
 }
 
@@ -86,6 +87,7 @@ body {
   font-size: 13px;
   font-weight: bold;
   margin: 1rem;
+  margin-left: 3rem;
   padding: 1rem;
   position: relative;
   text-align: center;
@@ -115,6 +117,7 @@ body {
   font-size: 13px;
   font-weight: bold;
   margin: 1rem;
+  margin-right: 2rem;
   padding: 1rem;
   position: relative;
   text-align: center;
@@ -135,14 +138,18 @@ body {
 
 .arrayHolder {
     display: flex;
-    justify-content: left;
-    align-items: center;
-    gap: 40rem;
+    justify-content: space-evenly;
+    align-items: stretch;
+    gap: 30rem;
+    margin-left: 3rem;
 }
 
-.undoHolder {
+.undoHolder, .redoHolder {
   display: grid;
   grid-template-rows: repeat(5, 50px);
+  width: 132px;
+  min-height: calc(5 * 72px);
+  flex: 0 0 132px;
 }
 
 .undoHolder .item {
@@ -151,11 +158,6 @@ body {
     list-style: none;
     margin-bottom: 1rem;
     justify-content: left;
-}
-
-.redoHolder {
-  display: grid;
-  grid-template-rows: repeat(5, 50px);
 }
 
 .redoHolder .item {
@@ -168,9 +170,9 @@ body {
 
 .colorElement {
     border: 1px solid;
-    width: 45px;
-    height: 45px;
-    border-radius: 15%;
+    width: 100px;
+    height: 40px;
+    border-radius: 5%;
     margin: 1rem;
 }
 
@@ -214,13 +216,45 @@ body {
   transition: transform .3s ease;
 }
 
-.sidebar.undo { left: 0;  transform: translateX(-100%); }
-.sidebar.redo { right: 0; transform: translateX( 100%); }
-
+.sidebar.undo  { left:0; transform: translateX(-100%); }
+.sidebar.redo  { right: 0; transform: translateX( 100%); }
 .sidebar.active { transform: translateX(0); }
 
 .panelHeading { text-align:center; margin:0 0 1rem; font-size:1.6rem; }
 .sidebarList  { display:flex; flex-direction:column; gap:.8rem; }
+
+.handle {
+  position: fixed;
+  top: 55%;
+  width: 25px;
+  height: 60px;
+  background: #d3d2d2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2100;                                  
+}
+
+.handle.left {
+  left: 0;
+  border-radius: 0 8px 8px 0;            
+}
+
+.handle.right {
+  right: 0;
+  border-radius: 8px 0 0 8px;
+}
+
+.handle::before {                    
+  content: '❯';
+  font-size: 2rem;
+  color: #666;
+}
+
+.handle.left::before {
+  content: '❮';    
+  font-size: 2rem;                   
+}
 
 #sidebarMask {
   position: fixed; inset: 0;
@@ -242,11 +276,17 @@ body {
 }
 
 .urButtons {
-    gap: 17rem;
-    margin-top: 20px;
+    gap: 3rem;
+    margin-top: 2rem;
 }
 
 .undoButton, .redoButton{
 padding-block: 20px;
 }
+
+.colorElement {
+    width: 180px;
+    height: 60px;
+}
+
 }

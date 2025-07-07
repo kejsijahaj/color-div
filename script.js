@@ -173,7 +173,7 @@ sidebarMask.addEventListener('click', closeSidebars);
 // swipe to open 
 
 let touchStartX = 0, touchStartT = 0;
-const LEFT_EDGE = 25, DIST = 60,   TIME = 500;
+const LEFT_EDGE = 25, RIGHT_EDGE = window.innerWidth - LEFT_EDGE, DIST = 60,   TIME = 500;
 
 document.addEventListener('touchstart', e => {
   if (!mqMobile.matches) return;
@@ -188,14 +188,20 @@ document.addEventListener('touchend', e => {
   const dt = Date.now() - touchStartT;
   if (dt > TIME || Math.abs(dx) < DIST) return;
 
-  RIGHT_EDGE = window.innerWidth - LEFT_EDGE
-
   const fromLeft  = touchStartX < LEFT_EDGE  && dx > 0;
   const fromRight = touchStartX > RIGHT_EDGE && dx < 0;
 
   if (fromLeft)  openSidebar('undo');
   if (fromRight) openSidebar('redo');
 }, { passive:true });
+
+document.getElementById('undoHandle').addEventListener('click', () => {
+  openSidebar('undo');         
+});
+document.getElementById('redoHandle').addEventListener('click', () => {
+  openSidebar('redo');
+});
+
 
 function panelTouchStart(e) {
   if (!mqMobile.matches) return;
@@ -221,8 +227,8 @@ function panelTouchMove(e) {
   e.preventDefault();               
   const touch = e.touches[0];
 
-  dragged.style.left = touch.pageX - 22.5 + 'px'; // 45/2 cause 45px is my
-  dragged.style.top  = touch.pageY - 22.5 + 'px'; // element size
+  dragged.style.left = touch.pageX - 50 + 'px'; // 100px/2 width (x)
+  dragged.style.top  = touch.pageY - 20 + 'px'; // 40px/2 height (y)
   const holder = tSourceList === 'undo' ? undoSidebarList : redoSidebarList;
   const siblings = [...holder.querySelectorAll('.colorElement:not(.dragging)')];
 
@@ -241,20 +247,38 @@ function panelTouchEnd(e) {
   const undoRect = undoSidebar.getBoundingClientRect();
   const redoRect = redoSidebar.getBoundingClientRect();
 
+  // use the mask as the trigger
+
+  const maskLeft = undoRect.right;
+  const maskRight = redoRect.left;
+
   let targetList, targetIndex;
 
-  if (touch.clientX < undoRect.left) {               
+  if (tSourceList === 'undo' && touch.clientX >= maskLeft && touch.clientX <= maskRight) {
+    console.log("source list is:", tSourceList);
     targetList  = 'redo';
-    targetIndex = redoArray.length;                    
-  } else if (touch.clientX > redoRect.right) { 
+    targetIndex = redoArray[0];
+  } 
+  
+  if (tSourceList === 'redo' && touch.clientX >= maskLeft && touch.clientX <= maskRight) {
+    console.log("source list is:", tSourceList);
     targetList  = 'undo';
-    targetIndex = undoArray.length;
-  } else {
+    targetIndex = undoArray[0];
+  } 
+  
+  if(!targetList) {
     const parentIsUndo = dragged.parentElement === undoSidebarList;
     targetList  = parentIsUndo ? 'undo' : 'redo';
     targetIndex = [...dragged.parentElement.children].indexOf(dragged);
   }
+
   updateArrays(tSourceList, targetList, tSourceIndex, targetIndex);
+
+  if (targetList === 'undo') {
+    openSidebar('undo');     
+  } else if (targetList === 'redo') {
+  openSidebar('redo');
+}
 
   //clean up
 
@@ -281,17 +305,18 @@ const updateArrays = (sourceList, targetList, sourceIndex, targetIndex) => {
 const displayArray = () => {
     clearHolders(undoHolder);
     clearHolders(redoHolder);
-    const limitedUndo = undoArray.slice(0,5); // limited to
-    const limitedRedo = redoArray.slice(0,5); // 5 elements
-    limitedUndo.forEach(element => {
+
+    undoArray.length = 5;
+
+    undoArray.forEach(element => {
         undoHolder.appendChild(makeDivs(element,"undo"));
     });
-    limitedRedo.forEach(element => {
+    redoArray.forEach(element => {
         redoHolder.appendChild(makeDivs(element,"redo"));
     });
 
-    undoButton.disabled = !limitedUndo.length;
-    redoButton.disabled = !limitedRedo.length;
+    undoButton.disabled = !undoArray.length;
+    redoButton.disabled = !redoArray.length;
 
     populateSidebars(); 
 };
